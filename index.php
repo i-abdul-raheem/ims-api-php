@@ -5,15 +5,18 @@ require 'config/config.php';
 require 'models/User.php';
 require 'models/Category.php';
 require 'models/Customer.php';
+require 'models/Vendor.php';
 require 'views/JsonView.php';
 require 'controllers/UserController.php';
 require 'controllers/CategoryController.php';
 require 'controllers/CustomerController.php';
+require 'controllers/VendorController.php';
 
 $database = new Database();
 $userController = new UserController($database);
 $categoryController = new CategoryController($database);
 $customerController = new CustomerController($database);
+$vendorController = new VendorController($database);
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
@@ -46,6 +49,10 @@ switch ($requestMethod) {
             $customerController->index();
         } elseif ($endpoint === 'customer' && $id) {
             $customerController->show($id);
+        } else if ($endpoint === 'vendor' && !$id) {
+            $vendorController->index();
+        } elseif ($endpoint === 'vendor' && $id) {
+            $vendorController->show($id);
         }
         break;
 
@@ -66,6 +73,9 @@ switch ($requestMethod) {
         } else if ($endpoint === 'customer') {
             $data = json_decode(file_get_contents('php://input'), true);
             $customerController->store($data);
+        } else if ($endpoint === 'vendor') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $vendorController->store($data);
         }
         break;
 
@@ -80,6 +90,9 @@ switch ($requestMethod) {
         } else if ($endpoint === 'customer') {
             $data = json_decode(file_get_contents('php://input'), true);
             $customerController->update($id, $data);
+        } else if ($endpoint === 'vendor') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $vendorController->update($id, $data);
         }
         break;
 
@@ -110,6 +123,8 @@ switch ($requestMethod) {
             $categoryController->destroy($id);
         } else if ($endpoint === 'customer' && $id) {
             $customerController->destroy($id);
+        } else if ($endpoint === 'vendor' && $id) {
+            $vendorController->destroy($id);
         }
         break;
 
