@@ -76,6 +76,17 @@ class Database
         ";
         $this->connection->exec($createVendorTable);
 
+        // Materials Table
+        $createMaterialTable = "
+            CREATE TABLE IF NOT EXISTS materials (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL UNIQUE,
+                category TEXT NOT NULL UNIQUE,
+                FOREIGN KEY (category) REFERENCES categories(id)
+            );
+        ";
+        $this->connection->exec($createMaterialTable);
+
         // ERROR
         if ($this->connection->lastErrorCode() !== 0) {
             die("Error creating tables: " . $this->connection->lastErrorMsg());

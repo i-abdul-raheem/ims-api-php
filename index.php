@@ -6,17 +6,20 @@ require 'models/User.php';
 require 'models/Category.php';
 require 'models/Customer.php';
 require 'models/Vendor.php';
+require 'models/Material.php';
 require 'views/JsonView.php';
 require 'controllers/UserController.php';
 require 'controllers/CategoryController.php';
 require 'controllers/CustomerController.php';
 require 'controllers/VendorController.php';
+require 'controllers/MaterialController.php';
 
 $database = new Database();
 $userController = new UserController($database);
 $categoryController = new CategoryController($database);
 $customerController = new CustomerController($database);
 $vendorController = new VendorController($database);
+$materialController = new MaterialController($database);
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
@@ -53,6 +56,12 @@ switch ($requestMethod) {
             $vendorController->index();
         } elseif ($endpoint === 'vendor' && $id) {
             $vendorController->show($id);
+        } else if ($endpoint === 'material' && !$id) {
+            $materialController->index();
+        } elseif ($endpoint === 'material' && $id) {
+            $materialController->show($id);
+        } elseif ($endpoint === 'material-category' && $id) {
+            $materialController->indexByCategory($id);
         }
         break;
 
@@ -76,6 +85,9 @@ switch ($requestMethod) {
         } else if ($endpoint === 'vendor') {
             $data = json_decode(file_get_contents('php://input'), true);
             $vendorController->store($data);
+        } else if ($endpoint === 'material') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $materialController->store($data);
         }
         break;
 
@@ -93,6 +105,9 @@ switch ($requestMethod) {
         } else if ($endpoint === 'vendor') {
             $data = json_decode(file_get_contents('php://input'), true);
             $vendorController->update($id, $data);
+        } else if ($endpoint === 'material') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $materialController->update($id, $data);
         }
         break;
 
@@ -125,6 +140,8 @@ switch ($requestMethod) {
             $customerController->destroy($id);
         } else if ($endpoint === 'vendor' && $id) {
             $vendorController->destroy($id);
+        } else if ($endpoint === 'material' && $id) {
+            $materialController->destroy($id);
         }
         break;
 
