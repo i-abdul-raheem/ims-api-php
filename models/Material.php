@@ -59,7 +59,7 @@ class Material
 
     public function getMaterial($id)
     {
-        $stmt = $this->db->prepare("SELECT * FROM materials WHERE id = :id");
+        $stmt = $this->db->prepare("SELECT * FROM materials WHERE code = :id");
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         return $result->fetchArray(SQLITE3_ASSOC);
@@ -70,10 +70,12 @@ class Material
         // Sanitize input
         $title = $data['title'];
         $category = $data['category'];
+        $code = $data['code'];
 
         // Check if a material with the same name already exists
-        $checkStmt = $this->db->prepare("SELECT COUNT(*) AS count FROM materials WHERE title = :title AND category = :category");
+        $checkStmt = $this->db->prepare("SELECT COUNT(*) AS count FROM materials WHERE title = :title AND category = :category AND code = :code");
         $checkStmt->bindValue(':title', $title, SQLITE3_TEXT);
+        $checkStmt->bindValue(':code', $code, SQLITE3_TEXT);
         $checkStmt->bindValue(':category', $category, SQLITE3_INTEGER);
         $checkResult = $checkStmt->execute();
         $checkRow = $checkResult->fetchArray(SQLITE3_ASSOC);
@@ -87,8 +89,9 @@ class Material
         }
 
         // Prepare the SQL query to insert a new material
-        $stmt = $this->db->prepare("INSERT INTO materials (title, category) VALUES (:title, :category)");
+        $stmt = $this->db->prepare("INSERT INTO materials (title, category, code) VALUES (:title, :category, :code)");
         $stmt->bindValue(':title', $title, SQLITE3_TEXT);
+        $checkStmt->bindValue(':code', $code, SQLITE3_TEXT);
         $stmt->bindValue(':category', $category, SQLITE3_INTEGER);
 
         // Execute the statement and return success or error response
@@ -110,10 +113,12 @@ class Material
         // Sanitize inputs
         $title = $data['title'];
         $category = $data['category'];
+        $code = $data['code'];
 
         // Check if a material with the same name already exists
-        $checkStmt = $this->db->prepare("SELECT COUNT(*) AS count FROM materials WHERE title = :title AND category = :category AND id != :id");
+        $checkStmt = $this->db->prepare("SELECT COUNT(*) AS count FROM materials WHERE title = :title AND category = :category AND code = :code AND id != :id");
         $checkStmt->bindValue(':title', $title, SQLITE3_TEXT);
+        $checkStmt->bindValue(':code', $title, SQLITE3_TEXT);
         $checkStmt->bindValue(':category', $category, SQLITE3_INTEGER);
         $checkStmt->bindValue(':id', $id, SQLITE3_INTEGER);
         $checkResult = $checkStmt->execute();
@@ -128,8 +133,9 @@ class Material
         }
 
         // Prepare the SQL query to update the material
-        $stmt = $this->db->prepare("UPDATE materials SET title = :title, category = :category WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE materials SET title = :title, category = :category, code = :code WHERE id = :id");
         $stmt->bindValue(':title', $title, SQLITE3_TEXT);
+        $checkStmt->bindValue(':code', $title, SQLITE3_TEXT);
         $stmt->bindValue(':category', $category, SQLITE3_TEXT);
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
 

@@ -80,12 +80,30 @@ class Database
         $createMaterialTable = "
             CREATE TABLE IF NOT EXISTS materials (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL UNIQUE,
                 title TEXT NOT NULL UNIQUE,
                 category TEXT NOT NULL UNIQUE,
                 FOREIGN KEY (category) REFERENCES categories(id)
             );
         ";
         $this->connection->exec($createMaterialTable);
+
+        // Orders Table
+        $createOrderTable = "
+        CREATE TABLE orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT CHECK(type IN ('sell', 'purchase')),
+            status TEXT CHECK(status IN ('pending', 'delivered', 'shipped', 'cancelled')),
+            items TEXT,
+            created_by INTEGER,
+            created_for INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (created_by) REFERENCES users(id),
+            FOREIGN KEY (created_for) REFERENCES vendors(id),
+            FOREIGN KEY (created_for) REFERENCES customers(id)
+        );
+        ";
+        $this->connection->exec($createOrderTable);
 
         // ERROR
         if ($this->connection->lastErrorCode() !== 0) {
