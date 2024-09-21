@@ -7,12 +7,16 @@ require 'models/Category.php';
 require 'models/Customer.php';
 require 'models/Vendor.php';
 require 'models/Material.php';
+require 'models/Order.php';
+require 'models/OrderItem.php';
 require 'views/JsonView.php';
 require 'controllers/UserController.php';
 require 'controllers/CategoryController.php';
 require 'controllers/CustomerController.php';
 require 'controllers/VendorController.php';
 require 'controllers/MaterialController.php';
+require 'controllers/OrderController.php';
+require 'controllers/OrderItemController.php';
 
 $database = new Database();
 $userController = new UserController($database);
@@ -20,6 +24,8 @@ $categoryController = new CategoryController($database);
 $customerController = new CustomerController($database);
 $vendorController = new VendorController($database);
 $materialController = new MaterialController($database);
+$orderController = new OrderController($database);
+$orderItemController = new OrderItemController($database);
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestUri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
@@ -48,20 +54,26 @@ switch ($requestMethod) {
             $categoryController->index();
         } elseif ($endpoint === 'category' && $id) {
             $categoryController->show($id);
-        } else if ($endpoint === 'customer' && !$id) {
+        } elseif ($endpoint === 'customer' && !$id) {
             $customerController->index();
         } elseif ($endpoint === 'customer' && $id) {
             $customerController->show($id);
-        } else if ($endpoint === 'vendor' && !$id) {
+        } elseif ($endpoint === 'vendor' && !$id) {
             $vendorController->index();
         } elseif ($endpoint === 'vendor' && $id) {
             $vendorController->show($id);
-        } else if ($endpoint === 'material' && !$id) {
+        } elseif ($endpoint === 'material' && !$id) {
             $materialController->index();
         } elseif ($endpoint === 'material' && $id) {
             $materialController->show($id);
         } elseif ($endpoint === 'material-category' && $id) {
             $materialController->indexByCategory($id);
+        } elseif ($endpoint === 'order' && !$id) {
+            $orderController->index();
+        } elseif ($endpoint === 'order' && $id) {
+            $orderController->show($id);
+        } elseif ($endpoint === 'order-item' && $id) {
+            $orderItemController->index($id);
         }
         break;
 
@@ -88,6 +100,12 @@ switch ($requestMethod) {
         } else if ($endpoint === 'material') {
             $data = json_decode(file_get_contents('php://input'), true);
             $materialController->store($data);
+        } elseif ($endpoint === 'order') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $orderController->store($data);
+        } elseif ($endpoint === 'order-item') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $orderItemController->store($data);
         }
         break;
 
@@ -99,15 +117,21 @@ switch ($requestMethod) {
         if ($endpoint === 'category') {
             $data = json_decode(file_get_contents('php://input'), true);
             $categoryController->update($id, $data);
-        } else if ($endpoint === 'customer') {
+        } elseif ($endpoint === 'customer') {
             $data = json_decode(file_get_contents('php://input'), true);
             $customerController->update($id, $data);
-        } else if ($endpoint === 'vendor') {
+        } elseif ($endpoint === 'vendor') {
             $data = json_decode(file_get_contents('php://input'), true);
             $vendorController->update($id, $data);
-        } else if ($endpoint === 'material') {
+        } elseif ($endpoint === 'material') {
             $data = json_decode(file_get_contents('php://input'), true);
             $materialController->update($id, $data);
+        } elseif ($endpoint === 'order' && $id) {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $orderController->update($id, $data);
+        } elseif ($endpoint === 'order-item' && $id) {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $orderItemController->update($id, $data);
         }
         break;
 
@@ -120,10 +144,10 @@ switch ($requestMethod) {
         if ($endpoint === 'update-password' && $id) {
             $data = json_decode(file_get_contents('php://input'), true);
             $userController->updatePassword($id, $data);
-        } else if ($endpoint === 'update-username' && $id) {
+        } elseif ($endpoint === 'update-username' && $id) {
             $data = json_decode(file_get_contents('php://input'), true);
             $userController->updateUsername($id, $data);
-        } else if ($endpoint === 'update-email' && $id) {
+        } elseif ($endpoint === 'update-email' && $id) {
             $data = json_decode(file_get_contents('php://input'), true);
             $userController->updateEmail($id, $data);
         }
@@ -142,6 +166,10 @@ switch ($requestMethod) {
             $vendorController->destroy($id);
         } else if ($endpoint === 'material' && $id) {
             $materialController->destroy($id);
+        } elseif ($endpoint === 'order' && $id) {
+            $orderController->destroy($id);
+        } elseif ($endpoint === 'order-item' && $id) {
+            $orderItemController->destroy($id);
         }
         break;
 

@@ -82,7 +82,7 @@ class Database
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 code TEXT NOT NULL UNIQUE,
                 title TEXT NOT NULL UNIQUE,
-                category TEXT NOT NULL UNIQUE,
+                category INTEGER NOT NULL,
                 FOREIGN KEY (category) REFERENCES categories(id)
             );
         ";
@@ -90,20 +90,34 @@ class Database
 
         // Orders Table
         $createOrderTable = "
-        CREATE TABLE orders (
+        CREATE TABLE IF NOT EXISTS orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT CHECK(type IN ('sell', 'purchase')),
             status TEXT CHECK(status IN ('pending', 'delivered', 'shipped', 'cancelled')),
-            items TEXT,
-            created_by INTEGER,
-            created_for INTEGER,
+            customer_id INTEGER,
+            vendor_id INTEGER,
+            created_by INTEGER NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (created_by) REFERENCES users(id),
-            FOREIGN KEY (created_for) REFERENCES vendors(id),
-            FOREIGN KEY (created_for) REFERENCES customers(id)
+            FOREIGN KEY (customer_id) REFERENCES customers(id),
+            FOREIGN KEY (vendor_id) REFERENCES vendors(id)
         );
         ";
         $this->connection->exec($createOrderTable);
+
+        // Order Items Table
+        $createOrderItemsTable = "
+        CREATE TABLE IF NOT EXISTS order_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL,
+            material_id INTEGER,
+            quantity INTEGER CHECK (quantity >= 0),
+            received INTEGER CHECK (received >= 0),
+            FOREIGN KEY (order_id) REFERENCES orders(id),
+            FOREIGN KEY (material_id) REFERENCES materials(id)
+        );
+        ";
+        $this->connection->exec($createOrderItemsTable);
 
         // ERROR
         if ($this->connection->lastErrorCode() !== 0) {
