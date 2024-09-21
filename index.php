@@ -46,10 +46,10 @@ function isAuthenticated($endpoint)
 
 switch ($requestMethod) {
     case 'GET':
-        // if (!isAuthenticated($endpoint)) {
-        //     JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
-        //     break;
-        // }
+        if (!isAuthenticated($endpoint)) {
+            JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
+            break;
+        }
         if ($endpoint === 'category' && !$id) {
             $categoryController->index();
         } elseif ($endpoint === 'category' && $id) {

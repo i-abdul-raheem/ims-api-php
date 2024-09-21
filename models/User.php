@@ -10,14 +10,6 @@ class User
 
     public function createUser($data)
     {
-        // Verify that the request is made by an authenticated user
-        if (!isset($_SESSION['user_id'])) {
-            return [
-                'status' => 'error',
-                'message' => 'Unauthorized request. Please log in.'
-            ];
-        }
-
         // Hash the password using bcrypt
         $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
 
