@@ -78,10 +78,10 @@ switch ($requestMethod) {
         break;
 
     case 'POST':
-        // if (!isAuthenticated($endpoint)) {
-        //     JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
-        //     break;
-        // }
+        if (!isAuthenticated($endpoint)) {
+            JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
+            break;
+        }
         if ($endpoint === 'users') {
             $data = json_decode(file_get_contents('php://input'), true);
             $userController->store($data);
@@ -110,10 +110,10 @@ switch ($requestMethod) {
         break;
 
     case 'PUT':
-        // if (!isAuthenticated($endpoint)) {
-        //     JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
-        //     break;
-        // }
+        if (!isAuthenticated($endpoint)) {
+            JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
+            break;
+        }
         if ($endpoint === 'category') {
             $data = json_decode(file_get_contents('php://input'), true);
             $categoryController->update($id, $data);
@@ -136,11 +136,10 @@ switch ($requestMethod) {
         break;
 
     case 'PATCH':
-        // if (!isAuthenticated($endpoint)) {
-        //     JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
-        //     break;
-        // }
-
+        if (!isAuthenticated($endpoint)) {
+            JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
+            break;
+        }
         if ($endpoint === 'update-password' && $id) {
             $data = json_decode(file_get_contents('php://input'), true);
             $userController->updatePassword($id, $data);
@@ -154,10 +153,10 @@ switch ($requestMethod) {
         break;
 
     case 'DELETE':
-        // if (!isAuthenticated($endpoint)) {
-        //     JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
-        //     break;
-        // }
+        if (!isAuthenticated($endpoint)) {
+            JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
+            break;
+        }
         if ($endpoint === 'category' && $id) {
             $categoryController->destroy($id);
         } else if ($endpoint === 'customer' && $id) {
