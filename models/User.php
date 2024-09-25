@@ -33,11 +33,11 @@ class User
         }
     }
 
-    public function updatePassword($id, $data)
+    public function updatePassword($data)
     {
         // Fetch the user's current password from the database
         $stmt = $this->db->prepare("SELECT password FROM users WHERE id = :id LIMIT 1");
-        $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+        $stmt->bindValue(':id', $_SESSION['user_id'], SQLITE3_INTEGER);
         $result = $stmt->execute();
         $user = $result->fetchArray(SQLITE3_ASSOC);
 
@@ -63,7 +63,7 @@ class User
         // Prepare the SQL query to update the password
         $stmtUpdate = $this->db->prepare("UPDATE users SET password = :password WHERE id = :id");
         $stmtUpdate->bindValue(':password', $hashedPassword, SQLITE3_TEXT); // Use hashed password
-        $stmtUpdate->bindValue(':id', $id, SQLITE3_INTEGER);
+        $stmtUpdate->bindValue(':id', $_SESSION['user_id'], SQLITE3_INTEGER);
 
         // Execute the update query
         if ($stmtUpdate->execute()) {
@@ -79,19 +79,21 @@ class User
         }
     }
 
-    public function updateEmail($id, $data)
+    public function updateEmail($data)
     {
         $stmt = $this->db->prepare("UPDATE users SET email = :email WHERE id = :id");
         $stmt->bindValue(':email', $data['email'], SQLITE3_TEXT);
-        $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+        $stmt->bindValue(':id', $_SESSION['user_id'], SQLITE3_INTEGER);
+        $_SESSION['user_email'] = $data['email'];
         return $stmt->execute();
     }
 
-    public function updateUsername($id, $data)
+    public function updateUsername($data)
     {
         $stmt = $this->db->prepare("UPDATE users SET username = :username WHERE id = :id");
         $stmt->bindValue(':username', $data['username'], SQLITE3_TEXT);
-        $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+        $stmt->bindValue(':id', $_SESSION['user_id'], SQLITE3_INTEGER);
+        $_SESSION['username'] = $data['username'];
         return $stmt->execute();
     }
 
@@ -115,6 +117,7 @@ class User
             // Password matches, set session or return success
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['user_email'] = $user['email'];
 
             // Update the last login timestamp
             $stmtUpdate = $this->db->prepare("UPDATE users SET last_login = :last_login WHERE id = :id");

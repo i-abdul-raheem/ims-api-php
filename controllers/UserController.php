@@ -17,27 +17,29 @@ class UserController
         }
     }
 
-    public function updatePassword($id, $data)
+    public function updatePassword($data)
     {
-        if ($this->model->updatePassword($id, $data)) {
-            JsonView::render(['message' => 'Password updated successfully']);
+        $req = $this->model->updatePassword($data);
+        if ($req['status'] != 'error') {
+            $status_code = 200;
         } else {
-            JsonView::render(['message' => 'Failed to update user'], 400);
+            $status_code = 400;
         }
+        JsonView::render(['message' => $req['message']], $status_code);
     }
 
-    public function updateEmail($id, $data)
+    public function updateEmail($data)
     {
-        if ($this->model->updateEmail($id, $data)) {
+        if ($this->model->updateEmail($data)) {
             JsonView::render(['message' => 'Email updated successfully']);
         } else {
             JsonView::render(['message' => 'Failed to update user'], 400);
         }
     }
 
-    public function updateUsername($id, $data)
+    public function updateUsername($data)
     {
-        if ($this->model->updateUsername($id, $data)) {
+        if ($this->model->updateUsername($data)) {
             JsonView::render(['message' => 'Username updated successfully']);
         } else {
             JsonView::render(['message' => 'Failed to update user'], 400);

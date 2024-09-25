@@ -28,11 +28,11 @@ class OrderItemController
         }
     }
 
-    public function update($id, $data)
+    public function update($data)
     {
-        $result = $this->model->updateOrderItem($id, $data);
+        $result = $this->model->updateOrderItem($data);
         if ($result['status'] === 'success') {
-            JsonView::render(['message' => $result['message']]);
+            JsonView::render(['message' => $result['message'], 'status' => 'success']);
         } else {
             JsonView::render(['message' => $result['message']], 400);
         }

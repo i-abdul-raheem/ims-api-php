@@ -20,11 +20,11 @@ class OrderItem
 
         foreach ($data['items'] as $item) {
             // Check if the required keys exist
-            if (isset($item['material_id'], $item['quantity'], $item['received'])) {
+            if (isset($item['material_id'], $item['quantity'])) {
                 $stmt->bindValue(':order_id', $data['order_id'], SQLITE3_INTEGER);
                 $stmt->bindValue(':material_id', $item['material_id'], SQLITE3_INTEGER);
                 $stmt->bindValue(':quantity', $item['quantity'], SQLITE3_INTEGER);
-                $stmt->bindValue(':received', $item['received'], SQLITE3_INTEGER);
+                $stmt->bindValue(':received', 0, SQLITE3_INTEGER);
 
                 if (!$stmt->execute()) {
                     $results['status'] = 'error'; // Set status to error if any insert fails
@@ -55,19 +55,47 @@ class OrderItem
         return $orderItems;
     }
 
-    public function updateOrderItem($id, $data)
+    public function updateOrderItem($data)
     {
-        $stmt = $this->db->prepare("UPDATE order_items SET material_id = :material_id, quantity = :quantity, received = :received WHERE id = :id");
+        // Start a transaction to improve performance and ensure atomicity
+        $this->db->exec('BEGIN TRANSACTION');
+
+        // Prepare both statements once to avoid re-preparing inside the loop
+        $updateStmt = $this->db->prepare("UPDATE order_items SET material_id = :material_id, quantity = :quantity, received = :received WHERE id = :id");
+        $insertStmt = $this->db->prepare("INSERT INTO order_items (order_id, material_id, quantity, received) VALUES (:order_id, :material_id, :quantity, :received)");
+
+        foreach ($data['items'] as $item) {
+            if (isset($item['id'])) {
+                $this->bindUpdateParameters($updateStmt, $item);
+                $updateStmt->execute();
+            } else {
+                $this->bindInsertParameters($insertStmt, $item);
+                $insertStmt->execute();
+            }
+        }
+
+        // Commit the transaction
+        $this->db->exec('COMMIT');
+
+        return ['status' => 'success', 'message' => 'Order item updated successfully'];
+    }
+
+    // Function to bind values for updating an order item
+    private function bindUpdateParameters($stmt, $data)
+    {
         $stmt->bindValue(':material_id', $data['material_id'], SQLITE3_INTEGER);
         $stmt->bindValue(':quantity', $data['quantity'], SQLITE3_INTEGER);
         $stmt->bindValue(':received', $data['received'], SQLITE3_INTEGER);
-        $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+        $stmt->bindValue(':id', $data['id'], SQLITE3_INTEGER);
+    }
 
-        if ($stmt->execute()) {
-            return ['status' => 'success', 'message' => 'Order item updated successfully'];
-        } else {
-            return ['status' => 'error', 'message' => 'Failed to update order item'];
-        }
+    // Function to bind values for inserting an order item
+    private function bindInsertParameters($stmt, $data)
+    {
+        $stmt->bindValue(':order_id', $data['order_id'], SQLITE3_INTEGER);
+        $stmt->bindValue(':material_id', $data['material_id'], SQLITE3_INTEGER);
+        $stmt->bindValue(':quantity', $data['quantity'], SQLITE3_INTEGER);
+        $stmt->bindValue(':received', $data['received'], SQLITE3_INTEGER);
     }
 
     public function deleteOrderItem($id)

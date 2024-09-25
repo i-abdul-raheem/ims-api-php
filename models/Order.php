@@ -10,16 +10,23 @@ class Order
 
     public function getAllOrders($limit = 10, $offset = 0)
     {
-        $limit = intval($limit);
-        $offset = intval($offset);
-        $query = "SELECT * FROM orders LIMIT :limit OFFSET :offset";
+        $query = "SELECT * FROM orders";
         $stmt = $this->db->prepare($query);
-        $stmt->bindValue(':limit', $limit, SQLITE3_INTEGER);
-        $stmt->bindValue(':offset', $offset, SQLITE3_INTEGER);
         $result = $stmt->execute();
 
         $orders = [];
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            if ($row["customer_id"] != 0) {
+                $stmt1 = $this->db->prepare("SELECT * FROM customers WHERE id = :id");
+                $stmt1->bindValue(':id', $row["customer_id"], SQLITE3_INTEGER);
+                $result1 = $stmt1->execute();
+                $row["customer"] = $result1->fetchArray(SQLITE3_ASSOC);
+            } else {
+                $stmt1 = $this->db->prepare("SELECT * FROM vendors WHERE id = :id");
+                $stmt1->bindValue(':id', $row["vendor_id"], SQLITE3_INTEGER);
+                $result1 = $stmt1->execute();
+                $row["vendor"] = $result1->fetchArray(SQLITE3_ASSOC);
+            }
             $orders[] = $row;
         }
         return $orders;
@@ -30,7 +37,19 @@ class Order
         $stmt = $this->db->prepare("SELECT * FROM orders WHERE id = :id");
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
         $result = $stmt->execute();
-        return $result->fetchArray(SQLITE3_ASSOC);
+        $row = $result->fetchArray(SQLITE3_ASSOC);
+        if ($row["customer_id"] != 0) {
+            $stmt1 = $this->db->prepare("SELECT * FROM customers WHERE id = :id");
+            $stmt1->bindValue(':id', $row["customer_id"], SQLITE3_INTEGER);
+            $result1 = $stmt1->execute();
+            $row["company"] = $result1->fetchArray(SQLITE3_ASSOC);
+        } else {
+            $stmt1 = $this->db->prepare("SELECT * FROM vendors WHERE id = :id");
+            $stmt1->bindValue(':id', $row["vendor_id"], SQLITE3_INTEGER);
+            $result1 = $stmt1->execute();
+            $row["company"] = $result1->fetchArray(SQLITE3_ASSOC);
+        }
+        return $row;
     }
 
     public function getLastInsertId()
@@ -42,10 +61,10 @@ class Order
     {
         $stmt = $this->db->prepare("INSERT INTO orders (type, status, customer_id, vendor_id, created_by) VALUES (:type, :status, :customer_id, :vendor_id, :created_by)");
         $stmt->bindValue(':type', $data['type'], SQLITE3_TEXT);
-        $stmt->bindValue(':status', $data['status'], SQLITE3_TEXT);
+        $stmt->bindValue(':status', 'pending', SQLITE3_TEXT);
         $stmt->bindValue(':customer_id', $data['customer_id'], SQLITE3_INTEGER);
         $stmt->bindValue(':vendor_id', $data['vendor_id'], SQLITE3_INTEGER);
-        $stmt->bindValue(':created_by', $data['created_by'], SQLITE3_INTEGER);
+        $stmt->bindValue(':created_by', $_SESSION['user_id'], SQLITE3_INTEGER);
 
         if ($stmt->execute()) {
             $orderId = $this->getLastInsertId();
@@ -57,12 +76,8 @@ class Order
 
     public function updateOrder($id, $data)
     {
-        $stmt = $this->db->prepare("UPDATE orders SET type = :type, status = :status, customer_id = :customer_id, vendor_id = :vendor_id, created_by = :created_by WHERE id = :id");
-        $stmt->bindValue(':type', $data['type'], SQLITE3_TEXT);
+        $stmt = $this->db->prepare("UPDATE orders SET status = :status WHERE id = :id");
         $stmt->bindValue(':status', $data['status'], SQLITE3_TEXT);
-        $stmt->bindValue(':customer_id', $data['customer_id'], SQLITE3_INTEGER);
-        $stmt->bindValue(':vendor_id', $data['vendor_id'], SQLITE3_INTEGER);
-        $stmt->bindValue(':created_by', $data['created_by'], SQLITE3_INTEGER);
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
 
         if ($stmt->execute()) {

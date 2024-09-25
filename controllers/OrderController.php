@@ -40,7 +40,7 @@ class OrderController
     {
         $result = $this->model->updateOrder($id, $data);
         if ($result['status'] === 'success') {
-            JsonView::render(['message' => $result['message']]);
+            JsonView::render(['message' => $result['message'], 'status' => 'success']);
         } else {
             JsonView::render(['message' => $result['message']], 400);
         }

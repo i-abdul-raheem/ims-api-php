@@ -35,13 +35,14 @@ $id = $requestUri[2] ?? null;
 // Function to check if authentication is required
 function isAuthenticated($endpoint)
 {
-    $publicEndpoints = [
-        'login',
-        'reset-password',
-        'forgot-password'
-    ];
-
-    return !in_array($endpoint, $publicEndpoints) && isset($_SESSION['user_id']);
+    if (
+        $endpoint != 'login' &&
+        $endpoint != 'reset-password' &&
+        $endpoint != 'forgot-password'
+    ) {
+        return isset($_SESSION['user_id']);
+    }
+    return true;
 }
 
 switch ($requestMethod) {
@@ -129,9 +130,9 @@ switch ($requestMethod) {
         } elseif ($endpoint === 'order' && $id) {
             $data = json_decode(file_get_contents('php://input'), true);
             $orderController->update($id, $data);
-        } elseif ($endpoint === 'order-item' && $id) {
+        } elseif ($endpoint === 'order-item' && !$id) {
             $data = json_decode(file_get_contents('php://input'), true);
-            $orderItemController->update($id, $data);
+            $orderItemController->update($data);
         }
         break;
 
@@ -140,15 +141,15 @@ switch ($requestMethod) {
             JsonView::render(['message' => 'Unauthorized request. Please log in.'], 401);
             break;
         }
-        if ($endpoint === 'update-password' && $id) {
+        if ($endpoint === 'update-password') {
             $data = json_decode(file_get_contents('php://input'), true);
-            $userController->updatePassword($id, $data);
-        } elseif ($endpoint === 'update-username' && $id) {
+            $userController->updatePassword($data);
+        } elseif ($endpoint === 'update-username') {
             $data = json_decode(file_get_contents('php://input'), true);
-            $userController->updateUsername($id, $data);
-        } elseif ($endpoint === 'update-email' && $id) {
+            $userController->updateUsername($data);
+        } elseif ($endpoint === 'update-email') {
             $data = json_decode(file_get_contents('php://input'), true);
-            $userController->updateEmail($id, $data);
+            $userController->updateEmail($data);
         }
         break;
 
